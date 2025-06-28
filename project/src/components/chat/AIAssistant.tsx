@@ -40,6 +40,30 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
   const windowRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
+  // Format assistant messages for better readability
+  const formatAssistantMessage = (content: string): string => {
+    return content
+      // Format section headers (ALL CAPS followed by content)
+      .replace(/^([A-Z\s&]+)$/gm, '<div class="font-bold text-cyan-300 mt-3 mb-2 text-sm">$1</div>')
+      // Format step headers (Step X: Description)
+      .replace(/^(Step \d+:?\s*[^\n]+)$/gm, '<div class="font-semibold text-white mt-2 mb-1">$1</div>')
+      // Format arrow bullet points (→ Content)
+      .replace(/^→\s*([^\n]+)$/gm, '<div class="flex items-start gap-2 ml-2 my-1"><span class="text-cyan-400 mt-0.5 flex-shrink-0">→</span><span class="text-slate-200">$1</span></div>')
+      // Format regular bullet points (• Content)
+      .replace(/^•\s*([^\n]+)$/gm, '<div class="flex items-start gap-2 ml-2 my-1"><span class="text-cyan-400 mt-0.5 flex-shrink-0">•</span><span class="text-slate-200">$1</span></div>')
+      // Format status lines (Status: Content)
+      .replace(/^(Status:?\s*[^\n]+)$/gm, '<div class="text-green-300 font-medium mt-3 text-sm">$1</div>')
+      // Format question lines (ending with ?)
+      .replace(/^([^\n]*\?)\s*$/gm, '<div class="text-cyan-200 font-medium mt-3">$1</div>')
+      // Format lines that start with a capital letter and end with colon (section dividers)
+      .replace(/^([A-Z][^:\n]*:)\s*$/gm, '<div class="font-semibold text-cyan-300 mt-3 mb-1 border-b border-slate-600/30 pb-1">$1</div>')
+      // Convert line breaks to proper spacing
+      .replace(/\n\n+/g, '<div class="my-2"></div>')
+      .replace(/\n/g, '<br>')
+      // Wrap everything in a container
+      .replace(/^(.+)$/s, '<div class="text-slate-100 leading-relaxed">$1</div>');
+  };
+
   // Detect mobile device with enhanced detection
   const isMobileDevice = () => {
     return window.innerWidth <= 768 || 
@@ -77,14 +101,16 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
         const newState = { ...prev, isMobile: mobile };
         
         if (mobile) {
-          // Mobile: Use full screen with padding
+          // Mobile: Compact size with better positioning
+          const mobileWidth = Math.min(window.innerWidth - 16, 360); // Max 360px width with 8px margin each side
+          const mobileHeight = Math.min(window.innerHeight - 80, 600); // Max 600px height with more top/bottom margin
           return {
             ...newState,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            x: 0,
-            y: 0,
-            viewMode: 'fullscreen'
+            width: mobileWidth,
+            height: mobileHeight,
+            x: (window.innerWidth - mobileWidth) / 2, // Center horizontally
+            y: Math.max(60, (window.innerHeight - mobileHeight) / 2), // Center vertically with minimum top offset
+            viewMode: 'normal'
           };
         } else if (prev.isMobile && !mobile) {
           // Switching from mobile to desktop
@@ -136,48 +162,37 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
       const welcomeMessage: ChatMessage = {
         id: 'welcome',
         role: 'assistant',
-        content: `🤖 **OSINT Intelligence Assistant - ONLINE**
+        content: `Hello! I'm your OSINT Intelligence Assistant, powered by Google Gemini 2.5 Pro. I'm here to help you with cybersecurity reconnaissance and intelligence gathering.
 
-🔥 **Powered by Google Gemini 2.5 Pro** | 🚀 **Enhanced AI Capabilities**
+I specialize in several key areas:
 
----
+INTELLIGENCE GATHERING
+→ Web Intelligence: Deep web analysis and hidden data discovery
+→ Social Intelligence: Multi-platform social media investigations
+→ Corporate Intelligence: Business research and competitive analysis
+→ Technical Intelligence: Infrastructure and security assessments
 
-### 🎯 **Core Specializations**
+SECURITY & INVESTIGATION
+→ Digital Footprinting: Comprehensive persona analysis
+→ Vulnerability Assessment: Security posture evaluation
+→ Legal Compliance: Ethical boundaries and regulations
+→ Evidence Collection: Forensic documentation standards
 
-**🔍 Advanced Intelligence Gathering:**
-• 🌐 **Web Intelligence** - Deep web analysis & hidden data discovery
-• 📱 **Social Intelligence** - Multi-platform SOCMINT methodologies
-• 🏢 **Corporate Intelligence** - Business & competitive analysis
-• 🔐 **Technical Intelligence** - Infrastructure & security assessment
+AI CAPABILITIES
+→ Real-time Analysis: Instant intelligent responses
+→ Contextual Guidance: Situation-specific recommendations
+→ Tool Integration: Direct access to 1000+ OSINT tools
+→ Adaptive Learning: Personalized assistance
 
-**🛡️ Security & Investigation:**
-• 👤 **Digital Footprinting** - Comprehensive persona analysis
-• 🔒 **Vulnerability Assessment** - Security posture evaluation
-• ⚖️ **Legal Compliance** - Ethical boundaries & regulations
-• 📋 **Evidence Collection** - Forensic documentation standards
+You can ask me about:
+• Advanced Google dorking techniques
+• Subdomain enumeration strategies  
+• Social media intelligence gathering
+• OPSEC best practices for investigators
+• API discovery and analysis techniques
+• Threat intelligence methodologies
 
-**🚀 Enhanced AI Features:**
-• ⚡ **Real-time Analysis** - Instant intelligent responses
-• 🎯 **Contextual Guidance** - Situation-specific recommendations
-• 🔧 **Tool Integration** - Direct access to 1000+ OSINT tools
-• 🤖 **Adaptive Learning** - Personalized assistance
-
----
-
-### 💡 **Quick Start Commands**
-
-Click any button below or ask me directly:
-
-🔍 "Advanced Google dorking for OSINT"  
-🌐 "Subdomain enumeration strategies"  
-📱 "Social media intelligence gathering"  
-🔒 "OPSEC best practices for investigators"  
-🔧 "API discovery and analysis techniques"  
-🧠 "Threat intelligence methodologies"
-
----
-
-**Status:** ✅ **AI Model Active** | 🔐 **Secure Connection** | ⚡ **Ready for Analysis**
+Status: AI Model Active | Secure Connection | Ready for Analysis
 
 What reconnaissance challenge can I help you solve today?`,
         timestamp: new Date()
@@ -215,16 +230,31 @@ What reconnaissance challenge can I help you solve today?`,
   };
 
   const setViewMode = (mode: WindowState['viewMode']) => {
-    // On mobile, always use fullscreen
+    // On mobile, handle sizing differently
     if (windowState.isMobile) {
-      setWindowState(prev => ({ 
-        ...prev, 
-        viewMode: 'fullscreen',
-        width: window.innerWidth,
-        height: window.innerHeight,
-        x: 0,
-        y: 0
-      }));
+      if (mode === 'fullscreen') {
+        // Mobile fullscreen uses most of the screen
+        setWindowState(prev => ({ 
+          ...prev, 
+          viewMode: 'fullscreen',
+          width: window.innerWidth - 8,
+          height: window.innerHeight - 40,
+          x: 4,
+          y: 20
+        }));
+      } else {
+        // Mobile normal is compact
+        const mobileWidth = Math.min(window.innerWidth - 16, 360);
+        const mobileHeight = Math.min(window.innerHeight - 80, 600);
+        setWindowState(prev => ({ 
+          ...prev, 
+          viewMode: 'normal',
+          width: mobileWidth,
+          height: mobileHeight,
+          x: (window.innerWidth - mobileWidth) / 2,
+          y: Math.max(60, (window.innerHeight - mobileHeight) / 2)
+        }));
+      }
       return;
     }
 
@@ -342,37 +372,31 @@ What reconnaissance challenge can I help you solve today?`,
       console.error('AI Generation Error:', error);
       
       // Enhanced fallback response
-      return `🔧 **Temporary Service Disruption**
+      return `I'm experiencing connectivity issues, but I can still provide immediate OSINT guidance for your query.
 
-I'm experiencing connectivity issues, but here's immediate OSINT guidance for your query:
+Quick Analysis for: "${userInput}"
 
----
+IMMEDIATE ACTION PLAN
 
-### 🎯 **Quick Analysis: "${userInput}"**
+Step 1: Passive Reconnaissance
+→ Start with search engines using advanced operators
+→ Check public records and databases  
+→ Review social media and professional networks
 
-**📋 Immediate Action Plan:**
+Step 2: Essential Tools
+→ Subdomain Discovery: Subfinder, Amass, Assetfinder
+→ DNS Analysis: DNSrecon, Fierce, MXToolbox
+→ Network Intelligence: Shodan, Censys, ZoomEye
+→ OSINT Frameworks: Recon-ng, Maltego, SpiderFoot
 
-1. **🔍 Passive Reconnaissance**
-   • Start with search engines using advanced operators
-   • Check public records and databases
-   • Review social media and professional networks
+Step 3: Security Reminders
+→ Ensure proper authorization before investigation
+→ Follow ethical guidelines and respect privacy
+→ Document findings with proper attribution
 
-2. **🛠️ Essential Tools**
-   • **Subdomain Discovery:** Subfinder, Amass, Assetfinder
-   • **DNS Analysis:** DNSrecon, Fierce, MXToolbox  
-   • **Network Intel:** Shodan, Censys, ZoomEye
-   • **OSINT Frameworks:** Recon-ng, Maltego, SpiderFoot
+Service Status: Reconnecting... Please try again shortly for detailed AI analysis.
 
-3. **⚖️ Security Reminders**
-   • Ensure proper authorization before investigation
-   • Follow ethical guidelines and respect privacy
-   • Document findings with proper attribution
-
----
-
-**🔄 Service Status:** Reconnecting... Please try again shortly for detailed AI analysis.
-
-Use the tool categories above for immediate access to specialized OSINT tools.`;
+You can use the tool categories above for immediate access to specialized OSINT tools.`;
     }
   };
 
@@ -431,7 +455,7 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
       await simulateTyping(response);
     } catch (error) {
       console.error('Chat error:', error);
-      const errorMessage = '🚨 **System Error**\n\nI encountered an error processing your request. Please try again or contact support if the issue persists.\n\n*Error logged for technical review.*';
+      const errorMessage = 'I encountered an error processing your request. Please try again or contact support if the issue persists.\n\nError has been logged for technical review.';
       await simulateTyping(errorMessage);
     } finally {
       setIsChatLoading(false);
@@ -494,7 +518,7 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
         const response = await generateOSINTResponse(lastUserMessage.content);
         await simulateTyping(response);
       } catch (error) {
-        const errorMessage = '🚨 Failed to regenerate response. Please try again.';
+        const errorMessage = 'Failed to regenerate response. Please try again.';
         await simulateTyping(errorMessage);
       } finally {
         setIsChatLoading(false);
@@ -504,19 +528,7 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
 
   if (!isOpen) return null;
 
-  const windowStyle: React.CSSProperties = windowState.isMobile ? {
-    width: '100vw',
-    height: '100vh',
-    transform: 'translate(0px, 0px)',
-    zIndex: 9999,
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    paddingTop: 'env(safe-area-inset-top)',
-    paddingBottom: 'env(safe-area-inset-bottom)',
-    paddingLeft: 'env(safe-area-inset-left)',
-    paddingRight: 'env(safe-area-inset-right)'
-  } : {
+  const windowStyle: React.CSSProperties = {
     width: windowState.width,
     height: windowState.height,
     transform: `translate(${windowState.x}px, ${windowState.y}px)`,
@@ -525,6 +537,13 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
     position: 'fixed',
     top: 0,
     left: 0,
+    // Add safe area support for mobile
+    ...(windowState.isMobile && {
+      paddingTop: 'env(safe-area-inset-top, 0px)',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      paddingLeft: 'env(safe-area-inset-left, 0px)',
+      paddingRight: 'env(safe-area-inset-right, 0px)'
+    })
   };
 
   return (
@@ -540,7 +559,8 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
         ref={windowRef}
         style={windowStyle}
         className={`bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl shadow-2xl border border-cyan-400/30 overflow-hidden pointer-events-auto flex flex-col ${
-          windowState.isMobile ? 'rounded-none' : 'rounded-3xl'
+          windowState.isMobile && windowState.viewMode === 'fullscreen' ? 'rounded-none' : 
+          windowState.isMobile ? 'rounded-2xl' : 'rounded-3xl'
         }`}
       >
         
@@ -554,7 +574,7 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
         <div 
           ref={headerRef}
           className={`relative z-10 flex items-center justify-between border-b border-cyan-400/20 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-cyan-500/10 ${
-            windowState.isMobile ? 'p-3 cursor-default' : 'p-4 cursor-move'
+            windowState.isMobile ? 'p-2.5 cursor-default' : 'p-4 cursor-move'
           }`}
           onMouseDown={windowState.isMobile ? undefined : handleMouseDown}
           onTouchStart={windowState.isMobile ? undefined : handleTouchStart}
@@ -590,48 +610,62 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
           
           {/* Window Controls */}
           <div className={`flex items-center ${windowState.isMobile ? 'gap-1' : 'gap-2'}`}>
-            {/* View Mode Selector - Hide on mobile */}
-            {!windowState.isMobile && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-all duration-300 transform hover:scale-110"
-                  title="Window settings"
-                >
-                  <FaCog className="text-sm" />
-                </button>
-                
-                {showSettings && (
-                  <div className="absolute top-full right-0 mt-2 bg-slate-800/95 backdrop-blur-xl border border-cyan-400/30 rounded-xl shadow-2xl overflow-hidden z-50 min-w-[200px]">
-                    <div className="p-3 border-b border-slate-700/50">
-                      <h4 className="text-white text-sm font-bold">View Mode</h4>
-                    </div>
-                    <div className="p-2">
-                      {[
-                        { mode: 'normal' as const, label: 'Normal', icon: FaWindowRestore },
-                        { mode: 'fullscreen' as const, label: 'Fullscreen', icon: FaExpand }
-                      ].map(({ mode, label, icon: Icon }) => (
-                        <button
-                          key={mode}
-                          onClick={() => {
-                            setViewMode(mode);
-                            setShowSettings(false);
-                          }}
-                          className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all ${
-                            windowState.viewMode === mode
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                          }`}
-                        >
-                          <Icon className="text-sm" />
-                          <span className="text-sm">{label}</span>
-                        </button>
-                      ))}
-                    </div>
+            {/* View Mode Selector - Mobile & Desktop */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className={`rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-all duration-300 transform hover:scale-110 ${
+                  windowState.isMobile ? 'p-1.5 min-h-[32px] min-w-[32px]' : 'p-2'
+                }`}
+                title="Window settings"
+              >
+                <FaCog className={windowState.isMobile ? 'text-xs' : 'text-sm'} />
+              </button>
+              
+              {showSettings && (
+                <div className={`absolute top-full right-0 mt-2 bg-slate-800/95 backdrop-blur-xl border border-cyan-400/30 rounded-xl shadow-2xl overflow-hidden z-50 ${
+                  windowState.isMobile ? 'min-w-[160px]' : 'min-w-[200px]'
+                }`}>
+                  <div className={`border-b border-slate-700/50 ${windowState.isMobile ? 'p-2' : 'p-3'}`}>
+                    <h4 className={`text-white font-bold ${windowState.isMobile ? 'text-xs' : 'text-sm'}`}>
+                      {windowState.isMobile ? 'Size' : 'View Mode'}
+                    </h4>
                   </div>
-                )}
-              </div>
-            )}
+                  <div className={windowState.isMobile ? 'p-1' : 'p-2'}>
+                    {[
+                      { 
+                        mode: 'normal' as const, 
+                        label: windowState.isMobile ? 'Compact' : 'Normal', 
+                        icon: FaWindowRestore 
+                      },
+                      { 
+                        mode: 'fullscreen' as const, 
+                        label: windowState.isMobile ? 'Large' : 'Fullscreen', 
+                        icon: FaExpand 
+                      }
+                    ].map(({ mode, label, icon: Icon }) => (
+                      <button
+                        key={mode}
+                        onClick={() => {
+                          setViewMode(mode);
+                          setShowSettings(false);
+                        }}
+                        className={`w-full flex items-center gap-2 rounded-lg transition-all ${
+                          windowState.isMobile ? 'p-1.5' : 'p-2 gap-3'
+                        } ${
+                          windowState.viewMode === mode
+                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                        }`}
+                      >
+                        <Icon className={windowState.isMobile ? 'text-xs' : 'text-sm'} />
+                        <span className={windowState.isMobile ? 'text-xs' : 'text-sm'}>{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             
             {/* Export Chat */}
             <button
@@ -683,7 +717,7 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
               <span className={`text-white font-semibold ${windowState.isMobile ? 'text-xs' : 'text-sm'}`}>Quick Actions</span>
             </div>
             <div className={`grid gap-2 ${
-              windowState.isMobile ? 'grid-cols-1' : 
+              windowState.isMobile ? 'grid-cols-2' : 
               windowState.viewMode === 'normal' ? 'grid-cols-2' : 'grid-cols-3'
             }`}>
               {quickActions.map((action, index) => (
@@ -768,8 +802,19 @@ Use the tool categories above for immediate access to specialized OSINT tools.`;
                           <div className={`whitespace-pre-wrap leading-relaxed ${
                             windowState.isMobile ? 'text-xs' : 
                             windowState.viewMode === 'fullscreen' ? 'text-base' : 'text-sm'
+                          } ${
+                            message.role === 'assistant' ? 'space-y-2' : ''
                           }`}>
-                            {message.content}
+                            {message.role === 'assistant' ? (
+                              <div 
+                                className="formatted-message"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: formatAssistantMessage(message.content) 
+                                }}
+                              />
+                            ) : (
+                              message.content
+                            )}
                           </div>
                           <div className={`flex items-center justify-between border-t ${
                             windowState.isMobile ? 'mt-1.5 pt-1.5' : 'mt-2 pt-2'
