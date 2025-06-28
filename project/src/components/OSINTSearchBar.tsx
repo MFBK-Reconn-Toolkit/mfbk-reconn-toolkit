@@ -67,15 +67,7 @@ const OSINTSearchBar: React.FC<OSINTSearchBarProps> = ({
     return () => clearTimeout(timer);
   }, [searchValue]);
 
-  // Auto-focus on mount (desktop only)
-  useEffect(() => {
-    if (!isMobile) {
-      const timer = setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isMobile]);
+  // Removed auto-focus to prevent suggestions showing on page load
 
   // AI-powered intelligent suggestions with enhanced relevance scoring
   const aiSuggestions = useMemo(() => {
@@ -188,7 +180,10 @@ const OSINTSearchBar: React.FC<OSINTSearchBarProps> = ({
 
   const handleFocus = () => {
     setIsFocused(true);
-    onSuggestionsToggle(true);
+    // Only show suggestions if there's search content
+    if (searchValue.length > 0) {
+      onSuggestionsToggle(true);
+    }
     if (isMobile) {
       setShowMobileHints(true);
     }
@@ -252,6 +247,12 @@ const OSINTSearchBar: React.FC<OSINTSearchBarProps> = ({
             value={searchValue}
             onChange={(e) => {
               onSearchChange(e.target.value);
+              // Show suggestions when user starts typing
+              if (e.target.value.length > 0) {
+                onSuggestionsToggle(true);
+              } else {
+                onSuggestionsToggle(false);
+              }
             }}
             onFocus={handleFocus}
             onBlur={handleBlur}
