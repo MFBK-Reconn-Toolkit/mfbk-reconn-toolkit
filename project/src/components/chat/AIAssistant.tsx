@@ -572,19 +572,8 @@ Remember: Use only authorized and legal scanning methods!`;
   };
 
   const generateOSINTResponse = async (userInput: string): Promise<string> => {
-    // Check for instant response first - PRIORITY CHECK
-    const instantResponse = getInstantResponse(userInput);
-    if (instantResponse) {
-      console.log('Using instant response for:', userInput);
-      return instantResponse;
-    }
-    
-    // Double check for simple greetings that might slip through
-    const simple = userInput.toLowerCase().trim();
-    if (simple === 'hi' || simple === 'hello' || simple === 'hey') {
-      console.log('Catching missed greeting:', userInput);
-      return `Hello! I'm your OSINT AI Assistant. Quick start: Click the buttons below or ask about specific OSINT techniques.`;
-    }
+    // Let the API handle ALL responses for consistency
+    console.log('Sending to API:', userInput);
     
     try {
       // Add timeout for faster fallback
@@ -592,51 +581,25 @@ Remember: Use only authorized and legal scanning methods!`;
         setTimeout(() => reject(new Error('Request timeout')), 8000); // 8 second timeout
       });
       
-      // Enhance the message with response length guidance
-      const enhancedMessage = getEnhancedPrompt(userInput);
-      
+      // Send message directly to API (it handles length control now)
       const responsePromise = apiService.chatWithOSINTAI({
-        message: enhancedMessage,
+        message: userInput,
         session_id: `osint_${Date.now()}`
       });
 
       const response = await Promise.race([responsePromise, timeoutPromise]);
 
       if (response.status === 'success' && response.response) {
-        // Process and potentially truncate very long responses
-        return processAPIResponse(response.response, userInput);
+        // API now handles response length control
+        return response.response;
       } else {
         throw new Error(response.error || 'Failed to get AI response');
       }
     } catch (error) {
       console.error('AI Generation Error:', error);
       
-      // Contextual fallback based on input length
-      if (userInput.length < 20) {
-        return `I'm having connectivity issues. For "${userInput}", try:
-
-→ Check the tool categories above for relevant OSINT tools
-→ Use quick action buttons for instant guidance
-→ Ask more specific questions like "subdomain enumeration tools"
-
-Reconnecting... Please try again shortly!`;
-      }
-      
-      // Detailed fallback for longer queries
-      return `I can provide immediate OSINT guidance for: "${userInput}"
-
-QUICK START:
-→ Use search engines with advanced operators
-→ Check public databases and records
-→ Try subdomain enumeration tools (Subfinder, Amass)
-→ Analyze with OSINT frameworks (Maltego, Recon-ng)
-
-NEXT STEPS:
-→ Browse the tool categories above for specialized tools
-→ Ensure you have proper authorization
-→ Document your findings properly
-
-Reconnecting for detailed analysis... Try specific keywords like "subdomain", "google dorking", or "social osint" for instant guidance!`;
+      // Simple fallback for all connection issues
+      return `I'm having connectivity issues. Please try again in a moment, or check the tool categories above for OSINT resources.`;
     }
   };
 
