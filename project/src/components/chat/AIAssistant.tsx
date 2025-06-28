@@ -349,17 +349,14 @@ What OSINT challenge can I help you solve today?`,
   const getInstantResponse = (query: string): string | null => {
     const lowerQuery = query.toLowerCase().trim();
     
-    // Simple greetings and short responses
-    if (lowerQuery.match(/^(hi|hello|hey|good morning|good afternoon|good evening)$/)) {
-      return `Hello! I'm your OSINT AI Assistant. Ready to help with reconnaissance and intelligence gathering.
+    // Simple greetings and short responses - COMPREHENSIVE COVERAGE
+    if (lowerQuery.match(/^(hi|hello|hey|good morning|good afternoon|good evening|hii|hiii|hi there|hello there|hey there)$/) || 
+        lowerQuery === 'hi' || lowerQuery === 'hello' || lowerQuery === 'hey') {
+      return `Hello! I'm your OSINT AI Assistant. 
 
-Quick options:
-→ Ask about "subdomain enumeration"
-→ Try "google dorking techniques"  
-→ Request "social media osint"
-→ Or click the quick action buttons below
+Quick start: Click the buttons below or ask about specific OSINT techniques.
 
-What can I help you investigate today?`;
+What can I help you investigate?`;
     }
     
     if (lowerQuery.match(/^(thanks|thank you|thx)$/)) {
@@ -385,21 +382,21 @@ Just ask about any of these topics or use the quick action buttons!`;
     }
     
     // Additional common short responses
-    if (lowerQuery.match(/^(ok|okay|yes|no|sure|cool|nice|good)$/)) {
-      return `Great! How can I assist you with OSINT reconnaissance today? Try asking about specific techniques or use the quick action buttons.`;
+    if (lowerQuery.match(/^(ok|okay|yes|no|sure|cool|nice|good|yeah|yep|alright)$/)) {
+      return `Great! Ask about specific OSINT techniques or use the quick action buttons.`;
     }
     
-    if (lowerQuery.match(/^(who are you|what are you)$/)) {
-      return `I'm an AI Assistant specialized in OSINT (Open Source Intelligence) and cybersecurity reconnaissance. I can help with subdomain enumeration, Google dorking, social media intelligence, and more!`;
+    if (lowerQuery.match(/^(who are you|what are you|who|what)$/)) {
+      return `I'm your OSINT AI Assistant. I help with reconnaissance techniques like subdomain enumeration, Google dorking, and social media intelligence.`;
     }
     
-    if (lowerQuery.match(/^(start|begin|let's start)$/)) {
-      return `Let's begin your OSINT investigation! Choose a starting point:
-
-→ Click "Google Dorking" for search techniques
-→ Select "Subdomain Enum" for domain discovery
-→ Try "Social Intel" for social media research
-→ Or ask about any specific OSINT technique`;
+    if (lowerQuery.match(/^(start|begin|let's start|go|ready)$/)) {
+      return `Ready to start! Click the quick action buttons below or ask about specific OSINT techniques.`;
+    }
+    
+    // Catch any very short inputs (1-3 characters) to prevent API calls
+    if (query.length <= 3 && !lowerQuery.includes('api') && !lowerQuery.includes('dns')) {
+      return `Please ask about specific OSINT techniques. Try: "subdomain tools" or "google dorking" or use the quick action buttons.`;
     }
     
     // Short question handling
@@ -575,10 +572,18 @@ Remember: Use only authorized and legal scanning methods!`;
   };
 
   const generateOSINTResponse = async (userInput: string): Promise<string> => {
-    // Check for instant response first
+    // Check for instant response first - PRIORITY CHECK
     const instantResponse = getInstantResponse(userInput);
     if (instantResponse) {
+      console.log('Using instant response for:', userInput);
       return instantResponse;
+    }
+    
+    // Double check for simple greetings that might slip through
+    const simple = userInput.toLowerCase().trim();
+    if (simple === 'hi' || simple === 'hello' || simple === 'hey') {
+      console.log('Catching missed greeting:', userInput);
+      return `Hello! I'm your OSINT AI Assistant. Quick start: Click the buttons below or ask about specific OSINT techniques.`;
     }
     
     try {
@@ -641,42 +646,61 @@ Reconnecting for detailed analysis... Try specific keywords like "subdomain", "g
     const isSimpleQuery = inputLength < 30;
     const isComplexQuery = inputLength > 100;
     
+    // Force ALL responses to be short and concise
+    const baseInstruction = "CRITICAL: Respond in maximum 3 sentences. Be direct and concise. No long explanations.";
+    
     if (isSimpleQuery) {
       return `${userInput}
 
-Please provide a concise, focused response (2-4 sentences) for this OSINT query. Include only the most essential information and practical next steps.`;
+${baseInstruction} Provide only the most essential information for this OSINT query.`;
     } else if (isComplexQuery) {
       return `${userInput}
 
-Please provide a comprehensive but well-structured response for this detailed OSINT inquiry. Use bullet points and clear sections to organize the information.`;
+${baseInstruction} Use bullet points for clarity but keep each point brief (maximum 1 line each).`;
     } else {
       return `${userInput}
 
-Please provide a balanced response (1-2 paragraphs) for this OSINT query with practical guidance and essential tools.`;
+${baseInstruction} Provide practical guidance in 2-3 short sentences maximum.`;
     }
   };
 
-  // Helper function to process API responses
+  // Helper function to process API responses - AGGRESSIVE TRUNCATION
   const processAPIResponse = (response: string, originalInput: string): string => {
     const inputLength = originalInput.length;
     const responseLength = response.length;
     
-    // If input is very short but response is very long, truncate intelligently
-    if (inputLength < 20 && responseLength > 800) {
-      const sentences = response.split(/[.!?]+/);
-      const truncated = sentences.slice(0, 3).join('. ');
+    // FORCE SHORT RESPONSES FOR ALL INPUTS
+    // If response is longer than 400 characters, truncate it
+    if (responseLength > 400) {
+      const sentences = response.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      
+      // Take first 2-3 sentences maximum
+      const maxSentences = inputLength < 50 ? 2 : 3;
+      const truncated = sentences.slice(0, maxSentences).join('. ').trim();
+      
       return `${truncated}.
 
-Need more details? Ask a more specific question or try the quick action buttons below!`;
+${inputLength < 20 ? 'Need more info? Ask specifically.' : 'Want more details? Please be more specific.'}`;
     }
     
-    // If response is extremely long (over 1500 chars), provide summary
-    if (responseLength > 1500) {
-      const paragraphs = response.split('\n\n');
-      const summary = paragraphs.slice(0, 2).join('\n\n');
-      return `${summary}
-
-Want more detailed information? Please ask about specific aspects of this topic.`;
+    // If response is still long but under 400 chars, check for unnecessary content
+    if (responseLength > 200) {
+      // Remove common verbose patterns
+      let cleaned = response
+        .replace(/Security Reminder:.*$/gm, '')
+        .replace(/Essential OSINT Resources:.*$/gm, '')
+        .replace(/Ethical and Legal Considerations:.*$/gm, '')
+        .replace(/Use the tool categories above.*$/gm, '')
+        .replace(/Before proceeding.*$/gm, '')
+        .trim();
+      
+      // If still too long, truncate to first paragraph
+      if (cleaned.length > 300) {
+        const firstParagraph = cleaned.split('\n\n')[0];
+        return firstParagraph + (firstParagraph.length < cleaned.length ? '\n\nAsk for specifics if needed.' : '');
+      }
+      
+      return cleaned;
     }
     
     return response;
