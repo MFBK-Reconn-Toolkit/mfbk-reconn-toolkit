@@ -187,7 +187,7 @@ export const performGlobalSearch = (query: string, categories: any[]) => {
     
     if (matchingTools && matchingTools.length > 0) {
       results.push({
-        category: category.title,
+        category: category, // Pass the full category object, not just the title
         categoryId: category.id,
         tools: matchingTools,
         matchCount: matchingTools.length
@@ -233,8 +233,9 @@ export const generateSearchSuggestions = (query: string): string[] => {
     'sublist3r'
   ];
   
+  // Return empty array when no query - don't show suggestions on page load
   if (!query || query.trim().length === 0) {
-    return suggestions.slice(0, 8);
+    return [];
   }
   
   const queryLower = query.toLowerCase().trim();
