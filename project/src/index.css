@@ -506,9 +506,9 @@
     inset 0 0 20px rgba(6, 182, 212, 0.1);
 }
 
-/* Mobile-Responsive Touch and Accessibility Enhancements */
+/* Mobile Performance Optimizations */
 @media (max-width: 768px) {
-  /* Mobile typography scaling */
+  /* Enhanced mobile typography scaling */
   .mobile-optimized {
     padding: 1rem;
   }
@@ -521,7 +521,7 @@
     font-size: clamp(1.5rem, 5vw, 3rem);
   }
 
-  /* Mobile-specific touch targets */
+  /* Mobile-specific touch targets with hardware acceleration */
   button, 
   [role="button"], 
   input[type="button"], 
@@ -529,44 +529,93 @@
   a {
     min-height: 44px;
     min-width: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Mobile-optimized animations (reduced motion for better performance) */
-  .animate-float { animation: mobile-float 2s ease-in-out infinite; }
-  .animate-pulse-glow { animation: mobile-pulse 1.5s ease-in-out infinite; }
-  .animate-cyber-glow { animation: mobile-glow 2s ease-in-out infinite; }
-  .animate-orbit { animation: orbit 12s linear infinite; }
+  /* Performance-optimized mobile animations */
+  .animate-float { 
+    animation: mobile-float 2s ease-in-out infinite;
+    will-change: transform;
+  }
+  .animate-pulse-glow { 
+    animation: mobile-pulse 1.5s ease-in-out infinite;
+    will-change: transform;
+  }
+  .animate-cyber-glow { 
+    animation: mobile-glow 2s ease-in-out infinite;
+    will-change: box-shadow;
+  }
+  .animate-orbit { 
+    animation: orbit 15s linear infinite;
+    will-change: transform;
+  }
   
-  /* Disable intensive animations on mobile for performance */
-  .animate-matrix-rain { animation: none; }
-  .animate-hologram { animation: none; }
-  .animate-logo-rotation { animation: none; }
+  /* Disable performance-intensive animations on mobile */
+  .animate-matrix-rain,
+  .animate-hologram,
+  .animate-logo-rotation,
+  .animate-data-stream,
+  .animate-circuit-trace,
+  .animate-quantum-fade {
+    animation: none !important;
+  }
   
-  /* Mobile hover effects (touch-friendly) */
+  /* Optimized mobile hover effects */
   .hover-lift:hover {
-    transform: translateY(-4px) scale(1.01);
+    transform: translateY(-2px) scale(1.005);
+    transition-duration: 0.2s;
   }
   
-  /* Mobile scrollbar (thinner for touch) */
+  /* Mobile scrollbar optimization */
   *::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 3px;
+    height: 3px;
   }
   
-  /* Mobile text shadows (reduced for performance) */
+  /* Simplified mobile effects for performance */
   .text-glow,
   .text-glow-purple,
   .text-glow-pink {
     text-shadow: none;
   }
   
-  /* Mobile neon effects (simplified) */
   .neon-shadow,
   .neon-shadow-purple,
   .neon-shadow-pink {
     box-shadow: 
-      0 0 5px rgba(6, 182, 212, 0.3),
-      0 0 10px rgba(6, 182, 212, 0.2);
+      0 0 3px rgba(6, 182, 212, 0.2),
+      0 0 6px rgba(6, 182, 212, 0.1);
+  }
+  
+  /* Mobile-specific performance optimizations */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(8px) !important;
+  }
+  
+  .backdrop-blur-lg {
+    backdrop-filter: blur(6px) !important;
+  }
+  
+  /* Reduce gradient complexity on mobile */
+  .bg-gradient-to-br,
+  .bg-gradient-to-r {
+    background-image: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to)) !important;
+  }
+  
+  /* Optimize transitions for mobile */
+  * {
+    transition-duration: 0.2s !important;
+  }
+  
+  /* Hardware acceleration for key elements */
+  .group,
+  .tool-card,
+  .category-section,
+  .search-bar {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 }
 
@@ -714,6 +763,47 @@
   .loading-shimmer {
     background-size: 150% 100%;
     animation: shimmer 1s infinite;
+  }
+}
+
+/* Mobile Performance Animation Keyframes */
+@keyframes slideInBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mobile-float {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-5px); 
+  }
+}
+
+@keyframes mobile-pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.02);
+  }
+}
+
+@keyframes mobile-glow {
+  0%, 100% { 
+    box-shadow: 0 0 3px rgba(6, 182, 212, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 6px rgba(6, 182, 212, 0.4);
   }
 }
 
