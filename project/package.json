@@ -1,0 +1,87 @@
+{
+  "name": "mfbk-reconn-toolkit",
+  "description": "🔥 MFBK-Reconn Toolkit - Advanced Cybersecurity Intelligence Gathering Platform with AI",
+  "version": "2.1.0",
+  "author": "MFBK Security Research <mustafabanikhalaf772@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "cybersecurity",
+    "reconnaissance",
+    "osint",
+    "penetration-testing",
+    "security-tools",
+    "intelligence-gathering",
+    "network-analysis",
+    "subdomain-enumeration",
+    "vulnerability-assessment",
+    "ai-powered",
+    "gemini-ai",
+    "security-research",
+    "ethical-hacking",
+    "infosec"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/0xmfbk/mfbk-reconn-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/0xmfbk/mfbk-reconn-toolkit/issues"
+  },
+  "homepage": "https://github.com/0xmfbk/mfbk-reconn-toolkit#readme",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3000",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "start": "npm run build && npm run preview",
+    "clean": "rm -rf node_modules package-lock.json && npm install",
+    "clean-win": "rmdir /s node_modules && del package-lock.json && npm install",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write src/**/*.{ts,tsx}"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "framer-motion": "^10.16.16",
+    "lucide-react": "^0.344.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
+    "recharts": "^2.8.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@rollup/rollup-linux-x64-gnu": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.6.0",
+    "autoprefixer": "^10.4.18",
+    "eslint": "^9.9.1",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.11",
+    "globals": "^15.9.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.3.0",
+    "vite": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

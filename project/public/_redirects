@@ -1,0 +1,22 @@
+# SPA Routing - All routes should serve index.html
+/*    /index.html   200
+
+# Security redirects
+/admin/*           https://mfbk-reconn-toolkit.netlify.app/   301!
+/.env              https://mfbk-reconn-toolkit.netlify.app/   301!
+/config/*          https://mfbk-reconn-toolkit.netlify.app/   301!
+
+# SEO friendly redirects
+/tools             /#tools                                    301
+/chat              /#chat                                     301
+/recon             /#recon                                    301
+/workspace         /#workspace                               301
+
+# Force HTTPS (handled by Netlify by default, but explicit)
+http://mfbk-reconn-toolkit.netlify.app/*  https://mfbk-reconn-toolkit.netlify.app/:splat  301!
+
+# Handle www redirects (if custom domain is used)
+https://www.mfbk-reconn-toolkit.netlify.app/*  https://mfbk-reconn-toolkit.netlify.app/:splat  301!
+
+# 404 handling for SPA
+/404   /index.html   200 

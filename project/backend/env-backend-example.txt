@@ -1,0 +1,26 @@
+# Backend Environment Variables
+# Set these in your hosting platform (Railway, Render, etc.)
+
+# Server Configuration (usually auto-provided)
+PORT=8000
+HOST=0.0.0.0
+
+# Frontend URL (set after deploying frontend)
+FRONTEND_URL=https://your-project.vercel.app
+
+# API Keys for backend services
+SHODAN_API_KEY=your_shodan_key_for_backend
+VIRUSTOTAL_API_KEY=your_virustotal_key_for_backend
+
+# Security
+SECRET_KEY=your-super-secret-key-minimum-32-characters-long
+
+# Database (if using)
+DATABASE_URL=postgresql://user:password@host:port/database
+REDIS_URL=redis://host:port
+
+# Optional: Email service
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password 

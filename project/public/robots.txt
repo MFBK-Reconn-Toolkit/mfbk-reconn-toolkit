@@ -1,0 +1,42 @@
+User-agent: *
+Allow: /
+
+# SEO Optimization
+Sitemap: https://mfbk-reconn-toolkit.netlify.app/sitemap.xml
+
+# Performance
+Crawl-delay: 1
+
+# Security - Block sensitive paths (if any)
+Disallow: /admin/
+Disallow: /.env
+Disallow: /config/
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Block malicious bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: / 
