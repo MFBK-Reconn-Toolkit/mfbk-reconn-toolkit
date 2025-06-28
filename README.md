@@ -82,7 +82,7 @@ Advanced search operators, specialized databases, and document discovery techniq
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/mfbk-reconn-toolkit.git
+git clone https://github.com/0xmfbk/mfbk-reconn-toolkit.git
 cd mfbk-reconn-toolkit/project
 
 # Install dependencies
@@ -234,8 +234,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 ### 🔗 **Links**
-- **GitHub Repository**: https://github.com/YOUR_USERNAME/mfbk-reconn-toolkit
-- **Issues & Bug Reports**: https://github.com/YOUR_USERNAME/mfbk-reconn-toolkit/issues
+- **GitHub Repository**: https://github.com/0xmfbk/mfbk-reconn-toolkit
+- **Issues & Bug Reports**: https://github.com/0xmfbk/mfbk-reconn-toolkit/issues
 - **Deployment Guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ### 📧 **Contact**
