@@ -1,4 +1,4 @@
-import React, { useState, useMemo, memo, useEffect } from 'react';
+import React, { useState, useMemo, memo, useEffect, useCallback, lazy, Suspense } from 'react';
 import { FaShieldAlt, FaRobot, FaSearch, FaExternalLinkAlt, FaTerminal, FaChevronRight, FaStar, FaFire, FaGem, FaRocket, FaBars, FaTimes } from 'react-icons/fa';
 import { toolCategories } from '../data/toolCategories';
 import { useDebounce, usePerformanceMonitor } from '../hooks/usePerformance';
@@ -123,37 +123,93 @@ const TopLeftLogo = () => {
   );
 };
 
-// Enhanced Mobile-Responsive Tool Card Component
-const ToolCard = memo(({ tool }: { tool: any }) => {
+// Lazy Loading Hook for Performance
+const useLazyLoading = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        },
+        { 
+          threshold: 0.1,
+          rootMargin: '50px' // Load slightly before entering viewport
+        }
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    }
+  }, []);
+  
+  return { ref, isVisible };
+};
+
+// Mobile Performance Optimized Tool Card Component
+const ToolCard = memo(({ tool, index }: { tool: any; index: number }) => {
   const isMobile = useIsMobile();
+  const { ref, isVisible } = useLazyLoading();
+  
+  // Placeholder for unloaded cards
+  if (!isVisible) {
+    return (
+      <div 
+        ref={ref}
+        className={`bg-slate-800/40 border border-slate-600/20 rounded-2xl animate-pulse ${
+          isMobile ? 'h-48 p-4' : 'h-56 p-6'
+        }`}
+      >
+        <div className="space-y-3">
+          <div className="h-4 bg-slate-700/50 rounded w-3/4"></div>
+          <div className="h-3 bg-slate-700/30 rounded w-full"></div>
+          <div className="h-3 bg-slate-700/30 rounded w-2/3"></div>
+          <div className={`h-10 bg-slate-700/40 rounded ${isMobile ? 'mt-4' : 'mt-6'}`}></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`group relative bg-gradient-to-br from-slate-800/80 via-slate-700/60 to-slate-800/80 backdrop-blur-xl border border-slate-600/40 rounded-2xl hover:border-cyan-400/60 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-500 hover:-translate-y-1 hover:scale-[1.02] overflow-hidden ${
-      isMobile ? 'p-4' : 'p-6 hover:-translate-y-2'
-    }`}>
-      {/* Glassmorphism background effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+    <div 
+      ref={ref}
+      className={`group relative bg-gradient-to-br from-slate-800/80 via-slate-700/60 to-slate-800/80 backdrop-blur-xl border border-slate-600/40 rounded-2xl hover:border-cyan-400/60 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 overflow-hidden will-change-transform ${
+        isMobile ? 'p-4 hover:scale-[1.01]' : 'p-6 hover:-translate-y-1 hover:scale-[1.02]'
+      }`}
+      style={{ 
+        animationDelay: `${index * 50}ms`,
+        animation: 'slideInBottom 0.4s ease-out forwards'
+      }}
+    >
+      {/* Simplified background effects for mobile performance */}
+      <div className={`absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-purple-500/5 opacity-0 transition-opacity duration-300 rounded-2xl ${
+        isMobile ? 'group-hover:opacity-50' : 'group-hover:opacity-100'
+      }`}></div>
       
-      {/* Animated border glow */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm"></div>
+      {/* Reduced border glow for mobile */}
+      {!isMobile && (
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm"></div>
+      )}
       
       <div className="relative z-10">
-        {/* Header with premium badge */}
+        {/* Optimized header */}
         <div className={`flex items-start justify-between ${isMobile ? 'mb-3' : 'mb-4'}`}>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className={`flex items-center gap-2 ${isMobile ? 'mb-1.5' : 'mb-2'}`}>
-              <h3 className={`text-white font-bold group-hover:text-cyan-300 transition-colors duration-300 line-clamp-2 ${
+              <h3 className={`text-white font-bold group-hover:text-cyan-300 transition-colors duration-300 truncate ${
                 isMobile ? 'text-base leading-tight' : 'text-lg'
               }`}>
                 {tool.name}
               </h3>
               {tool.type && (
-                <div className="relative flex-shrink-0">
+                <div className="flex-shrink-0">
                   <span className={`inline-flex items-center gap-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-300 font-semibold rounded-full border border-cyan-400/30 backdrop-blur-sm ${
                     isMobile ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-xs'
                   }`}>
-                    <FaGem className="text-xs" />
-                    {isMobile ? tool.type.substring(0, 3) : tool.type}
+                    <FaGem className="text-xs flex-shrink-0" />
+                    <span className="truncate">{isMobile ? tool.type.substring(0, 3) : tool.type}</span>
                   </span>
                 </div>
               )}
@@ -161,29 +217,29 @@ const ToolCard = memo(({ tool }: { tool: any }) => {
           </div>
         </div>
         
-        {/* Description with improved typography */}
-        <p className={`text-slate-300 leading-relaxed group-hover:text-slate-200 transition-colors ${
-          isMobile ? 'text-sm mb-4 line-clamp-2' : 'text-sm mb-6 line-clamp-3'
+        {/* Optimized description */}
+        <p className={`text-slate-300 leading-relaxed group-hover:text-slate-200 transition-colors line-clamp-2 ${
+          isMobile ? 'text-sm mb-3' : 'text-sm mb-4'
         }`}>
           {tool.description}
         </p>
         
-        {/* Action buttons with enhanced design */}
+        {/* Streamlined action buttons */}
         <div className={`space-y-2 ${isMobile ? 'space-y-2' : 'space-y-3'}`}>
           {tool.link && (
             <a
               href={tool.link}
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center justify-between w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/30 group/button ${
-                isMobile ? 'px-3 py-2.5 text-sm min-h-[44px]' : 'px-4 py-3'
+              className={`flex items-center justify-between w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-xl transition-all duration-200 group/button touch-manipulation ${
+                isMobile ? 'px-3 py-2.5 text-sm min-h-[44px] active:scale-95' : 'px-4 py-3 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/30'
               }`}
             >
-              <span className="flex items-center gap-2">
-                <FaExternalLinkAlt className={isMobile ? 'text-xs' : 'text-sm'} />
+              <span className="flex items-center gap-2 min-w-0">
+                <FaExternalLinkAlt className={`flex-shrink-0 ${isMobile ? 'text-xs' : 'text-sm'}`} />
                 <span className="truncate">Visit Tool</span>
               </span>
-              <FaChevronRight className={`group-hover/button:translate-x-1 transition-transform ${
+              <FaChevronRight className={`flex-shrink-0 group-hover/button:translate-x-1 transition-transform ${
                 isMobile ? 'text-xs' : 'text-sm'
               }`} />
             </a>
@@ -219,21 +275,33 @@ const ToolCard = memo(({ tool }: { tool: any }) => {
   );
 });
 
-// Enhanced Mobile-Responsive Category Section
+// Mobile Performance Optimized Category Section
 const CategorySection = memo(({ category, searchResults }: { category: any; searchResults?: any }) => {
   const toolsToShow = searchResults?.tools || category.tools;
   const IconComponent = category.icon;
   const isMobile = useIsMobile();
+  const [visibleCount, setVisibleCount] = useState(isMobile ? 6 : 12);
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Memoize visible tools for performance
+  const visibleTools = useMemo(() => {
+    if (isExpanded || toolsToShow.length <= visibleCount) {
+      return toolsToShow;
+    }
+    return toolsToShow.slice(0, visibleCount);
+  }, [toolsToShow, visibleCount, isExpanded]);
+  
+  const remainingCount = toolsToShow.length - visibleCount;
   
   return (
     <section className={isMobile ? 'mb-12' : 'mb-16'}>
-      {/* Category Header with Enhanced Mobile Design */}
-      <div className={`flex items-center gap-4 bg-gradient-to-r from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-slate-600/30 rounded-3xl hover:border-cyan-400/40 transition-all duration-500 ${
-        isMobile ? 'p-4 mb-6 flex-col text-center' : 'gap-6 p-6 mb-8'
+      {/* Optimized Category Header */}
+      <div className={`flex items-center gap-4 bg-gradient-to-r from-slate-800/60 via-slate-700/40 to-slate-800/60 backdrop-blur-xl border border-slate-600/30 rounded-3xl transition-all duration-300 ${
+        isMobile ? 'p-4 mb-6 flex-col text-center hover:border-cyan-400/30' : 'gap-6 p-6 mb-8 hover:border-cyan-400/40'
       }`}>
         <div className="relative">
-          <div className={`bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-cyan-500/30 transform hover:rotate-6 transition-transform duration-300 ${
-            isMobile ? 'w-12 h-12 text-lg' : 'w-16 h-16 text-2xl'
+          <div className={`bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform duration-200 ${
+            isMobile ? 'w-12 h-12 text-lg hover:scale-105' : 'w-16 h-16 text-2xl hover:rotate-6'
           }`}>
             <IconComponent />
           </div>
@@ -278,16 +346,36 @@ const CategorySection = memo(({ category, searchResults }: { category: any; sear
         </div>
       </div>
       
-      {/* Enhanced Mobile-Responsive Tools Grid */}
+      {/* Performance Optimized Tools Grid */}
       <div className={`grid gap-4 ${
         isMobile 
           ? 'grid-cols-1' 
           : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8'
       }`}>
-        {toolsToShow.map((tool: any, index: number) => (
-          <ToolCard key={`${tool.name}-${index}`} tool={tool} />
+        {visibleTools.map((tool: any, index: number) => (
+          <ToolCard key={`${tool.name}-${index}`} tool={tool} index={index} />
         ))}
       </div>
+      
+      {/* Load More Button for Mobile Performance */}
+      {!isExpanded && remainingCount > 0 && (
+        <div className="text-center mt-8">
+          <button
+            onClick={() => setIsExpanded(true)}
+            className={`inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-600 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl touch-manipulation ${
+              isMobile ? 'px-6 py-3 text-sm min-h-[44px]' : 'px-8 py-3 hover:scale-105'
+            }`}
+          >
+            <FaRocket className={`${isMobile ? 'text-sm' : 'text-base'}`} />
+            <span>Show {remainingCount} More Tools</span>
+            <div className={`bg-cyan-400/20 text-cyan-300 rounded-full font-bold ${
+              isMobile ? 'px-2 py-0.5 text-xs' : 'px-2 py-1 text-xs'
+            }`}>
+              +{remainingCount}
+            </div>
+          </button>
+        </div>
+      )}
     </section>
   );
 });
@@ -503,32 +591,52 @@ const ReconDashboard: React.FC = () => {
   // Performance monitoring
   const { metrics, updateMetric } = usePerformanceMonitor();
   
-  // Debounced search for better performance
-  const debouncedSearch = useDebounce(searchValue, 300);
+  // Enhanced debounced search with mobile-specific timing
+  const debouncedSearch = useDebounce(searchValue, isMobile ? 500 : 300);
   
-  // Memoized search results
+  // Optimized search results with performance tracking
   const searchResults = useMemo(() => {
+    if (!debouncedSearch.trim()) return [];
+    
     const startTime = performance.now();
     const results = performGlobalSearch(debouncedSearch, toolCategories);
-    updateMetric('searchTime', performance.now() - startTime);
+    const searchTime = performance.now() - startTime;
+    
+    updateMetric('searchTime', searchTime);
+    
+    // Log performance for debugging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Search performance: ${searchTime.toFixed(2)}ms for "${debouncedSearch}"`);
+    }
+    
     return results;
   }, [debouncedSearch, updateMetric]);
   
-  // Memoized suggestions
-  const suggestions = useMemo(() => 
-    generateSearchSuggestions(searchValue), 
-    [searchValue]
-  );
+  // Memoized suggestions with reduced frequency for mobile
+  const suggestions = useMemo(() => {
+    if (searchValue.length < (isMobile ? 3 : 2)) return [];
+    return generateSearchSuggestions(searchValue);
+  }, [searchValue, isMobile]);
   
-  // Memoized filtered categories
+  // Optimized filtered categories
   const filteredCategories = useMemo(() => {
     if (selectedFilter === 'all') return toolCategories;
     return toolCategories.filter(cat => cat.id === selectedFilter);
   }, [selectedFilter]);
+  
+  // Mobile-specific performance optimization
+  useEffect(() => {
+    if (isMobile) {
+      // Optimize for mobile by reducing animation overhead
+      document.documentElement.style.setProperty('--animation-duration', '0.2s');
+    } else {
+      document.documentElement.style.setProperty('--animation-duration', '0.3s');
+    }
+  }, [isMobile]);
 
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
-    setShowSuggestions(value.length >= 2);
+    // Don't automatically show suggestions - let OSINTSearchBar handle this
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
@@ -559,19 +667,19 @@ const ReconDashboard: React.FC = () => {
           onClick={toggleChatbot}
           className={`fixed bg-gradient-to-r from-cyan-500 to-purple-600 rounded-2xl shadow-2xl shadow-cyan-500/30 flex items-center justify-center text-white hover:scale-110 hover:rotate-12 transition-all duration-300 z-50 border-4 border-white/20 group ${
             isMobile 
-              ? 'bottom-4 right-4 w-16 h-16' 
+              ? 'bottom-6 right-6 w-14 h-14' 
               : 'bottom-8 right-8 w-20 h-20'
           }`}
           title="Open AI Assistant"
         >
           <FaRobot className={`group-hover:animate-bounce ${
-            isMobile ? 'text-xl' : 'text-2xl'
+            isMobile ? 'text-lg' : 'text-2xl'
           }`} />
           <div className={`absolute bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse flex items-center justify-center ${
-            isMobile ? '-top-1 -right-1 w-5 h-5' : '-top-2 -right-2 w-6 h-6'
+            isMobile ? '-top-1 -right-1 w-4 h-4' : '-top-2 -right-2 w-6 h-6'
           }`}>
             <span className={`text-white font-bold ${
-              isMobile ? 'text-xs' : 'text-sm'
+              isMobile ? 'text-[10px]' : 'text-sm'
             }`}>AI</span>
           </div>
         </button>
