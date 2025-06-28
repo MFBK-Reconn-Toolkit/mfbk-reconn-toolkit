@@ -76,35 +76,50 @@ exports.handler = async (event, context) => {
     // Initialize the Google Generative AI client
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Use gemini-1.5-flash model
+    // Use gemini-1.5-flash model with dynamic token limits
+    const maxTokens = isSimpleGreeting ? 50 : isShortMessage ? 150 : 800;
+    
     const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
       generationConfig: {
         temperature: 0.7,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 1500,
+        maxOutputTokens: maxTokens,
       },
     });
 
     console.log('Sending request to Gemini...');
     
-    // Enhanced OSINT prompt with clear formatting instructions
-    const prompt = `You are an expert OSINT (Open Source Intelligence) and cybersecurity consultant. Please help with this question:
+    // Detect simple greetings and short responses
+    const isSimpleGreeting = /^(hi|hello|hey|thanks|thank you|bye|goodbye|ok|okay|yes|no|what|who|start|begin)$/i.test(message.trim());
+    const isShortMessage = message.trim().length < 30;
+    
+    console.log('Message analysis:', {
+      message: message.trim(),
+      isSimpleGreeting,
+      isShortMessage,
+      length: message.trim().length
+    });
+    
+    let prompt;
+    
+    if (isSimpleGreeting) {
+      prompt = `Respond very briefly to this greeting: "${message}". Keep it to 1-2 sentences maximum. You are an OSINT AI Assistant.`;
+    } else if (isShortMessage) {
+      prompt = `You are an OSINT expert. Answer this briefly in 2-3 sentences maximum: "${message}". Be direct and concise.`;
+    } else {
+      prompt = `You are an expert OSINT (Open Source Intelligence) consultant. Help with this question: "${message}". 
 
-"${message}"
+Guidelines:
+- Keep response under 400 words
+- Be practical and actionable
+- Use simple language
+- Avoid excessive symbols or formatting
+- Provide 2-3 key points maximum
 
-Guidelines for your response:
-- Provide practical, actionable advice
-- Use clear, simple language without excessive symbols or formatting
-- Focus on specific tools, techniques, and methodologies
-- Include step-by-step guidance when relevant
-- Always emphasize ethical and legal compliance
-- Keep the response professional and easy to read
-- Use simple bullet points or numbered lists when needed
-- Avoid complex symbols, asterisks, or heavy formatting
-
-Please provide a comprehensive but easy-to-read response.`;
+Be concise and helpful.`;
+    }
 
     // Generate response
     const result = await model.generateContent(prompt);
@@ -154,20 +169,28 @@ Please provide a comprehensive but easy-to-read response.`;
       .replace(/\s+/g, ' ') // Replace multiple spaces with single space
       .trim();
 
-    // Format clean response
-    const formattedResponse = `OSINT Expert Assistant
+    // Format response based on input type - NO MORE STATIC TEMPLATES
+    let formattedResponse;
+    
+    if (isSimpleGreeting) {
+      // Simple greetings get minimal response
+      formattedResponse = aiResponse.trim();
+    } else if (isShortMessage) {
+      // Short messages get brief response without boilerplate
+      formattedResponse = aiResponse.trim();
+    } else {
+      // Only complex OSINT queries get the full template
+      formattedResponse = `${aiResponse}
 
-${aiResponse}
-
-Security Reminder: Always ensure you have proper authorization before conducting any reconnaissance activities. Follow ethical guidelines and respect privacy laws.
+Security Reminder: Always ensure proper authorization before conducting reconnaissance activities.
 
 Essential OSINT Resources:
-- OSINT Framework (osintframework.com) - Comprehensive tool directory
-- Intel Techniques (inteltechniques.com) - Advanced investigation methods
-- Bellingcat Toolkit - Online investigation tools
-- OSINT Curious - Community resources and tutorials
+- OSINT Framework (osintframework.com)
+- Intel Techniques (inteltechniques.com)
+- Bellingcat Toolkit
 
-Use the tool categories above to find specific OSINT tools for your investigation needs.`;
+Use the tool categories above for specific OSINT tools.`;
+    }
 
     return {
       statusCode: 200,
