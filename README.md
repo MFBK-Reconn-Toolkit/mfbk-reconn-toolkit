@@ -16,7 +16,6 @@ A comprehensive OSINT reconnaissance toolkit featuring 1115+ cybersecurity tools
 - **1115+ Cybersecurity Tools** organized in 9 major categories
 - **Real-time Search & Filtering** with intelligent suggestions
 - **Direct Tool Access** with working URLs and command examples
-- **No Duplicates** - cleaned and verified database
 
 ### 🤖 **AI-Powered OSINT Assistant**
 - **Google Gemini 1.5 Flash** integration for expert guidance
