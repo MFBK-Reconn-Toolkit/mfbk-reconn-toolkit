@@ -83,14 +83,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
     isMobile: false
   });
 
-  // Quick action suggestions - mobile optimized
+  // Quick action suggestions - optimized for instant responses
   const quickActions = [
-    { icon: FaSearch, text: "Google Dorking", prompt: "Show me advanced Google dorking techniques for OSINT research" },
-    { icon: FaNetworkWired, text: "Subdomain Enum", prompt: "Explain comprehensive subdomain enumeration strategies" },
-    { icon: FaEye, text: "Social Intel", prompt: "How to gather intelligence from social media platforms ethically" },
-    { icon: FaShieldAlt, text: "OPSEC Tips", prompt: "What are the essential OPSEC measures for reconnaissance?" },
-    { icon: FaCode, text: "API Discovery", prompt: "How to discover and analyze APIs during reconnaissance" },
-    { icon: FaBrain, text: "Threat Intel", prompt: "Explain threat intelligence gathering and analysis techniques" }
+    { icon: FaSearch, text: "Google Dorking", prompt: "google dork techniques" },
+    { icon: FaNetworkWired, text: "Subdomain Enum", prompt: "subdomain enumeration tools" },
+    { icon: FaEye, text: "Social Intel", prompt: "social media osint techniques" },
+    { icon: FaCode, text: "API Discovery", prompt: "api discovery and testing" },
+    { icon: FaShieldAlt, text: "DNS Analysis", prompt: "dns analysis tools" },
+    { icon: FaBrain, text: "Network Intel", prompt: "network intelligence gathering" }
   ];
 
   // Handle window resize and mobile detection
@@ -162,39 +162,28 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
       const welcomeMessage: ChatMessage = {
         id: 'welcome',
         role: 'assistant',
-        content: `Hello! I'm your OSINT Intelligence Assistant, powered by Google Gemini 2.5 Pro. I'm here to help you with cybersecurity reconnaissance and intelligence gathering.
+        content: `Hello! I'm your OSINT Intelligence Assistant, powered by Google Gemini 2.5 Pro.
 
-I specialize in several key areas:
+QUICK START AREAS:
+→ Google Dorking: Advanced search techniques
+→ Subdomain Enumeration: Discovery strategies
+→ Social Media OSINT: Platform investigations
+→ API Discovery: Endpoint analysis
+→ DNS Analysis: Domain intelligence
+→ Network Intel: Infrastructure reconnaissance
 
-INTELLIGENCE GATHERING
-→ Web Intelligence: Deep web analysis and hidden data discovery
-→ Social Intelligence: Multi-platform social media investigations
-→ Corporate Intelligence: Business research and competitive analysis
-→ Technical Intelligence: Infrastructure and security assessments
+INSTANT RESPONSES:
+I provide immediate guidance for common OSINT queries. Try clicking the quick action buttons below or ask about any reconnaissance technique.
 
-SECURITY & INVESTIGATION
-→ Digital Footprinting: Comprehensive persona analysis
-→ Vulnerability Assessment: Security posture evaluation
-→ Legal Compliance: Ethical boundaries and regulations
-→ Evidence Collection: Forensic documentation standards
+KEY FEATURES:
+→ 1000+ OSINT tools available
+→ Real-time intelligent responses
+→ Ethical guidance and best practices
+→ Step-by-step technical instructions
 
-AI CAPABILITIES
-→ Real-time Analysis: Instant intelligent responses
-→ Contextual Guidance: Situation-specific recommendations
-→ Tool Integration: Direct access to 1000+ OSINT tools
-→ Adaptive Learning: Personalized assistance
+Status: Online and Ready
 
-You can ask me about:
-• Advanced Google dorking techniques
-• Subdomain enumeration strategies  
-• Social media intelligence gathering
-• OPSEC best practices for investigators
-• API discovery and analysis techniques
-• Threat intelligence methodologies
-
-Status: AI Model Active | Secure Connection | Ready for Analysis
-
-What reconnaissance challenge can I help you solve today?`,
+What OSINT challenge can I help you solve today?`,
         timestamp: new Date()
       };
       setChatMessages([welcomeMessage]);
@@ -356,12 +345,189 @@ What reconnaissance challenge can I help you solve today?`,
     }
   }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove]);
 
+  // Fast response cache for common queries
+  const getInstantResponse = (query: string): string | null => {
+    const lowerQuery = query.toLowerCase();
+    
+    // Common OSINT queries with instant responses
+    if (lowerQuery.includes('subdomain') || lowerQuery.includes('enumerate')) {
+      return `Quick Subdomain Enumeration Guide:
+
+FAST TOOLS:
+→ Subfinder: Fast passive subdomain discovery
+→ Amass: Comprehensive OSINT subdomain enumeration  
+→ Assetfinder: Find domains and subdomains
+→ Findomain: Cross-platform subdomain enumerator
+
+PASSIVE METHODS:
+→ Certificate Transparency: crt.sh, Censys
+→ DNS databases: DNSDumpster, SecurityTrails
+→ Search engines: Google dorking, Bing
+
+ACTIVE METHODS:
+→ Gobuster: DNS brute-forcing
+→ Massdns: High-performance DNS resolver
+→ Fierce: DNS reconnaissance tool
+
+Run these tools safely and ethically with proper authorization!`;
+    }
+    
+    if (lowerQuery.includes('google') && lowerQuery.includes('dork')) {
+      return `Essential Google Dorking Techniques:
+
+SITE SEARCH:
+→ site:example.com - Search specific domain
+→ site:*.example.com - Include subdomains
+→ -site:example.com - Exclude domain
+
+FILE TYPES:
+→ filetype:pdf site:example.com
+→ ext:xlsx OR ext:docx sensitive data
+→ filetype:sql backup OR dump
+
+SENSITIVE INFO:
+→ intitle:"index of" password
+→ inurl:admin OR inurl:login
+→ "database error" OR "sql error"
+
+DIRECTORIES:
+→ intitle:"index of" inurl:backup
+→ inurl:"/phpmyadmin/" + "index.php"
+→ intext:"powered by" vulnerable software
+
+Always respect robots.txt and legal boundaries!`;
+    }
+    
+    if (lowerQuery.includes('social') || lowerQuery.includes('osint')) {
+      return `Social Media OSINT Techniques:
+
+PLATFORMS:
+→ LinkedIn: Professional connections, company info
+→ Twitter: Real-time updates, geolocation data
+→ Facebook: Personal connections, check-ins
+→ Instagram: Photos with metadata, locations
+
+TOOLS:
+→ Sherlock: Username search across platforms
+→ Social Searcher: Multi-platform monitoring
+→ Maltego: Visual link analysis
+→ Twint: Twitter intelligence tool
+
+TECHNIQUES:
+→ Username correlation across platforms
+→ Photo reverse search (Google Images, TinEye)
+→ Metadata extraction from images
+→ Timeline analysis and pattern recognition
+
+Remember: Always respect privacy and platform terms of service!`;
+    }
+    
+    if (lowerQuery.includes('api') || lowerQuery.includes('endpoint')) {
+      return `API Discovery & Testing:
+
+DISCOVERY:
+→ /api/v1/, /api/v2/, /rest/, /graphql
+→ robots.txt, sitemap.xml for endpoints
+→ JavaScript files for API references
+→ Swagger/OpenAPI documentation
+
+TOOLS:
+→ Postman: API testing and documentation
+→ Burp Suite: Web application security testing
+→ OWASP ZAP: Open-source security scanner
+→ Nuclei: Fast vulnerability scanner
+
+COMMON ENDPOINTS:
+→ /api/users, /api/admin, /api/config
+→ /health, /status, /debug
+→ /v1/auth, /oauth, /token
+→ /.well-known/ directory
+
+Test responsibly with proper authorization only!`;
+    }
+    
+    if (lowerQuery.includes('dns') || lowerQuery.includes('domain')) {
+      return `DNS Analysis Techniques:
+
+BASIC TOOLS:
+→ nslookup: Basic DNS lookup utility
+→ dig: Advanced DNS lookup tool
+→ host: Simple DNS lookup command
+→ whois: Domain registration information
+
+ADVANCED TOOLS:
+→ DNSrecon: Comprehensive DNS enumeration
+→ Fierce: DNS scanner and subdomain finder
+→ DNSenum: DNS enumeration tool
+→ MassDNS: High-performance DNS resolver
+
+RECORD TYPES:
+→ A records: IPv4 addresses
+→ AAAA records: IPv6 addresses  
+→ MX records: Mail server information
+→ TXT records: Text records (SPF, DKIM)
+→ CNAME records: Canonical name aliases
+→ NS records: Name server information
+
+ONLINE TOOLS:
+→ MXToolbox: Comprehensive DNS analysis
+→ DNSDumpster: DNS recon and research
+→ SecurityTrails: Historical DNS data
+
+Always verify results with multiple sources!`;
+    }
+    
+    if (lowerQuery.includes('network') || lowerQuery.includes('intel')) {
+      return `Network Intelligence Gathering:
+
+PASSIVE RECONNAISSANCE:
+→ Shodan: Internet-connected device search
+→ Censys: Internet scan data and certificates
+→ ZoomEye: Cyberspace search engine
+→ Binary Edge: Internet scanning platform
+
+NETWORK SCANNING:
+→ Nmap: Network discovery and security auditing
+→ Masscan: Fast port scanner
+→ Zmap: Internet-wide network scanner
+→ Unicornscan: Flexible network probe
+
+BGP & ASN ANALYSIS:
+→ BGPView: BGP and ASN lookup
+→ Hurricane Electric: BGP toolkit
+→ RIPE Stat: Internet statistics and data
+→ ASN lookup: Autonomous system information
+
+GEOLOCATION:
+→ MaxMind: IP geolocation database
+→ IPinfo: IP address data provider
+→ IP2Location: IP geolocation service
+
+Remember: Use only authorized and legal scanning methods!`;
+    }
+    
+    return null; // No instant response available
+  };
+
   const generateOSINTResponse = async (userInput: string): Promise<string> => {
+    // Check for instant response first
+    const instantResponse = getInstantResponse(userInput);
+    if (instantResponse) {
+      return instantResponse;
+    }
+    
     try {
-      const response = await apiService.chatWithOSINTAI({
+      // Add timeout for faster fallback
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 8000); // 8 second timeout
+      });
+      
+      const responsePromise = apiService.chatWithOSINTAI({
         message: userInput,
         session_id: `osint_${Date.now()}`
       });
+
+      const response = await Promise.race([responsePromise, timeoutPromise]);
 
       if (response.status === 'success' && response.response) {
         return response.response;
@@ -371,32 +537,21 @@ What reconnaissance challenge can I help you solve today?`,
     } catch (error) {
       console.error('AI Generation Error:', error);
       
-      // Enhanced fallback response
-      return `I'm experiencing connectivity issues, but I can still provide immediate OSINT guidance for your query.
+      // Faster, more concise fallback response
+      return `I can provide immediate OSINT guidance for: "${userInput}"
 
-Quick Analysis for: "${userInput}"
+QUICK START:
+→ Use search engines with advanced operators
+→ Check public databases and records
+→ Try subdomain enumeration tools (Subfinder, Amass)
+→ Analyze with OSINT frameworks (Maltego, Recon-ng)
 
-IMMEDIATE ACTION PLAN
+NEXT STEPS:
+→ Browse the tool categories above for specialized tools
+→ Ensure you have proper authorization
+→ Document your findings properly
 
-Step 1: Passive Reconnaissance
-→ Start with search engines using advanced operators
-→ Check public records and databases  
-→ Review social media and professional networks
-
-Step 2: Essential Tools
-→ Subdomain Discovery: Subfinder, Amass, Assetfinder
-→ DNS Analysis: DNSrecon, Fierce, MXToolbox
-→ Network Intelligence: Shodan, Censys, ZoomEye
-→ OSINT Frameworks: Recon-ng, Maltego, SpiderFoot
-
-Step 3: Security Reminders
-→ Ensure proper authorization before investigation
-→ Follow ethical guidelines and respect privacy
-→ Document findings with proper attribution
-
-Service Status: Reconnecting... Please try again shortly for detailed AI analysis.
-
-You can use the tool categories above for immediate access to specialized OSINT tools.`;
+Reconnecting for detailed analysis... Try specific keywords like "subdomain", "google dorking", or "social osint" for instant guidance!`;
     }
   };
 
@@ -414,8 +569,10 @@ You can use the tool categories above for immediate access to specialized OSINT 
     
     setChatMessages(prev => [...prev, typingMessage]);
     
-    // Simulate typing delay based on message length
-    const typingDelay = Math.min(Math.max(message.length * 20, 1000), 3000);
+    // Optimized typing delay - much faster response
+    const baseDelay = windowState.isMobile ? 300 : 500; // Reduced base delay
+    const typingDelay = Math.min(Math.max(message.length * 3, baseDelay), 1200); // Much faster calculation
+    
     await new Promise(resolve => setTimeout(resolve, typingDelay));
     
     // Remove typing indicator and add real message
@@ -433,7 +590,7 @@ You can use the tool categories above for immediate access to specialized OSINT 
     });
     
     setIsTyping(false);
-  }, []);
+  }, [windowState.isMobile]);
 
   const handleSendMessage = async (messageText?: string) => {
     const message = messageText || chatInput.trim();
